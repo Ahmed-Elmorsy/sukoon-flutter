@@ -63,4 +63,17 @@ class PaymentsApiService {
       headers: apiHeaders(token),
     ));
   }
+
+  static Future<Map<String, dynamic>> triggerPaymobWebhook(
+      String hmac, Map<String, dynamic> payload) async {
+    return apiLogged('POST', '/api/payments/webhook/paymob', () => http.post(
+      Uri.parse('$apiBase/api/payments/webhook/paymob?hmac=$hmac'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(payload),
+    ));
+  }
 }
+

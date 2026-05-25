@@ -15,6 +15,7 @@ import 'owner_contracts_screen.dart';
 import 'payments/payments_screen.dart';
 import 'admin_refunds_screen.dart';
 import 'admin_verification_screen.dart';
+import 'payments/payments_webhooks_screen.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -501,6 +502,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AdminVerificationScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                context,
+                Icons.webhook,
+                'Webhooks Sim',
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PaymentsWebhooksScreen()),
                 ),
               ),
             ),

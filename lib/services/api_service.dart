@@ -375,6 +375,12 @@ class ApiService {
           String token, int orderId) =>
       PaymentsApiService.retryPaymentLink(token, orderId);
 
+  static Future<Map<String, dynamic>> triggerPaymobWebhook({
+    required String hmac,
+    required Map<String, dynamic> payload,
+  }) =>
+      PaymentsApiService.triggerPaymobWebhook(hmac, payload);
+
   // ── OWNER & TENANT PROFILE EXTENSIONS ────────────────────────
   static Future<Map<String, dynamic>> updatePayoutInfo({
     required String token,
