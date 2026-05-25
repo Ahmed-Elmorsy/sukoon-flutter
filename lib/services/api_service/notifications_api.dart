@@ -10,9 +10,17 @@ class NotificationsApiService {
   }
 
   static Future<Map<String, dynamic>> markNotificationRead(
-      String token, int id) async {
+      String token, dynamic id) async {
     return apiLogged('POST', '/api/notifications/$id/read', () => http.post(
       Uri.parse('$apiBase/api/notifications/$id/read'),
+      headers: apiHeaders(token),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> markAllNotificationsRead(
+      String token) async {
+    return apiLogged('POST', '/api/notifications/read-all', () => http.post(
+      Uri.parse('$apiBase/api/notifications/read-all'),
       headers: apiHeaders(token),
     ));
   }
@@ -25,3 +33,4 @@ class NotificationsApiService {
     ));
   }
 }
+

@@ -337,8 +337,11 @@ class ApiService {
       NotificationsApiService.getNotifications(token);
 
   static Future<Map<String, dynamic>> markNotificationRead(
-          String token, int id) =>
+          String token, dynamic id) =>
       NotificationsApiService.markNotificationRead(token, id);
+
+  static Future<Map<String, dynamic>> markAllNotificationsRead(String token) =>
+      NotificationsApiService.markAllNotificationsRead(token);
 
   static Future<Map<String, dynamic>> deleteAllNotifications(String token) =>
       NotificationsApiService.deleteAllNotifications(token);

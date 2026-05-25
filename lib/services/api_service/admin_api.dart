@@ -123,7 +123,7 @@ class AdminApiService {
   static Future<Map<String, dynamic>> getApartmentModerationDetails(
       String token, int id) async {
     return apiLogged('GET', '/api/admin/apartments/$id/moderation-details', () => http.get(
-      Uri.parse('$apiBase/api/apartments/$id/moderation-details'),
+      Uri.parse('$apiBase/api/admin/apartments/$id/moderation-details'),
       headers: apiHeaders(token),
     ));
   }

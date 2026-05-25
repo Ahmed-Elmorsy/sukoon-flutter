@@ -55,25 +55,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  Future<void> _clearAll() async {
+  Future<void> _markAllRead() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear All Notifications'),
-        content: const Text('Are you sure you want to delete all notifications?'),
+        title: const Text('Mark All as Read'),
+        content: const Text('Are you sure you want to mark all notifications as read?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete All', style: TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Mark Read', style: TextStyle(color: AppTheme.primaryBlue)),
+          ),
         ],
       ),
     );
     if (confirm != true) return;
-    await ApiService.deleteAllNotifications(AuthSession.instance.token);
-    setState(() => _notifications.clear());
+    await ApiService.markAllNotificationsRead(AuthSession.instance.token);
+    setState(() {
+      for (var n in _notifications) {
+        n['status'] = 'read';
+      }
+    });
     NotificationPoller.instance.refresh();
   }
 
-  Future<void> _markRead(int id, int index) async {
+  Future<void> _markRead(String id, int index) async {
     await ApiService.markNotificationRead(AuthSession.instance.token, id);
     setState(() {
       _notifications[index]['status'] = 'read';
@@ -102,9 +109,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           if (AuthSession.instance.role != 'admin' && _notifications.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_sweep_outlined, color: Colors.red),
-              tooltip: 'Clear All',
-              onPressed: _clearAll,
+              icon: const Icon(Icons.done_all, color: AppTheme.primaryBlue),
+              tooltip: 'Mark All Read',
+              onPressed: _markAllRead,
             ),
           IconButton(
             icon: const Icon(Icons.refresh, color: AppTheme.primaryBlue),
@@ -139,7 +146,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildNotificationCard(int index) {
     final n = _notifications[index];
-    final id = n['id'] as int? ?? 0;
+    final id = n['id']?.toString() ?? '';
     final data = n['data'] as Map<String, dynamic>? ?? {};
     final title = data['title']?.toString() ?? 'Notification';
     final body = data['body']?.toString() ?? '';
@@ -149,7 +156,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return GestureDetector(
       onTap: () {
-        if (!isRead) _markRead(id, index);
+        if (!isRead && id.isNotEmpty) _markRead(id, index);
         _handleNotificationTap(data);
       },
       child: Container(
