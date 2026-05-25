@@ -129,4 +129,119 @@ class ProfileApiService {
       body: jsonEncode(ocrData),
     ));
   }
+
+  static Future<Map<String, dynamic>> updatePayoutInfo({
+    required String token,
+    String? payoutInfo,
+    String? payoutType,
+    String? payoutNumber,
+  }) async {
+    final payload = <String, dynamic>{
+      if (payoutInfo != null) 'payout_info': payoutInfo,
+      if (payoutType != null) 'payout_type': payoutType,
+      if (payoutNumber != null) 'payout_number': payoutNumber,
+    };
+    return apiLogged('POST', '/api/owner/payout', () => http.post(
+      Uri.parse('$apiBase/api/owner/payout'),
+      headers: apiHeaders(token),
+      body: jsonEncode(payload),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> uploadOwnerIdentityDocument({
+    required String token,
+    required String type,
+    required String documentNumber,
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    AppLogger.instance.info('API', 'POST /api/owner/identity-document');
+    final req = http.MultipartRequest(
+      'POST',
+      Uri.parse('$apiBase/api/owner/identity-document'),
+    );
+    req.headers['Accept'] = 'application/json';
+    req.headers['Authorization'] = 'Bearer $token';
+    req.fields['type'] = type;
+    req.fields['document_number'] = documentNumber;
+    req.files.add(http.MultipartFile.fromBytes(
+      'file',
+      fileBytes,
+      filename: fileName,
+    ));
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
+    final res = await http.Response.fromStream(streamed);
+    final body = jsonDecode(res.body);
+    AppLogger.instance.api('POST', '/api/owner/identity-document', res.statusCode, body);
+    return {'status': res.statusCode, 'body': body};
+  }
+
+  static Future<Map<String, dynamic>> uploadTenantIdentityDocument({
+    required String token,
+    required String type,
+    required String documentNumber,
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    AppLogger.instance.info('API', 'POST /api/tenant/identity-document');
+    final req = http.MultipartRequest(
+      'POST',
+      Uri.parse('$apiBase/api/tenant/identity-document'),
+    );
+    req.headers['Accept'] = 'application/json';
+    req.headers['Authorization'] = 'Bearer $token';
+    req.fields['type'] = type;
+    req.fields['document_number'] = documentNumber;
+    req.files.add(http.MultipartFile.fromBytes(
+      'file',
+      fileBytes,
+      filename: fileName,
+    ));
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
+    final res = await http.Response.fromStream(streamed);
+    final body = jsonDecode(res.body);
+    AppLogger.instance.api('POST', '/api/tenant/identity-document', res.statusCode, body);
+    return {'status': res.statusCode, 'body': body};
+  }
+
+  static Future<Map<String, dynamic>> uploadTenantContract({
+    required String token,
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    AppLogger.instance.info('API', 'POST /api/tenant/contracts');
+    final req = http.MultipartRequest(
+      'POST',
+      Uri.parse('$apiBase/api/tenant/contracts'),
+    );
+    req.headers['Accept'] = 'application/json';
+    req.headers['Authorization'] = 'Bearer $token';
+    req.files.add(http.MultipartFile.fromBytes(
+      'file',
+      fileBytes,
+      filename: fileName,
+    ));
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
+    final res = await http.Response.fromStream(streamed);
+    final body = jsonDecode(res.body);
+    AppLogger.instance.api('POST', '/api/tenant/contracts', res.statusCode, body);
+    return {'status': res.statusCode, 'body': body};
+  }
+
+  static Future<Map<String, dynamic>> getTenantPaymentStatus(String token) async {
+    return apiLogged('GET', '/api/tenant/payment-status', () => http.get(
+      Uri.parse('$apiBase/api/tenant/payment-status'),
+      headers: apiHeaders(token),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> requestTenantRefund(String token) async {
+    return apiLogged('POST', '/api/tenant/refund', () => http.post(
+      Uri.parse('$apiBase/api/tenant/refund'),
+      headers: apiHeaders(token),
+    ));
+  }
 }

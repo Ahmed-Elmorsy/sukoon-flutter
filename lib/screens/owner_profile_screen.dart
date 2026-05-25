@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_session.dart';
 import '../services/app_logger.dart';
@@ -10,31 +9,23 @@ import '../services/api_service.dart';
 import 'auth/choose_language_screen.dart';
 import 'edit_profile_screen.dart';
 
-class TenantProfileScreen extends StatefulWidget {
-  final String role;
-
-  const TenantProfileScreen({super.key, required this.role});
+class OwnerProfileScreen extends StatefulWidget {
+  const OwnerProfileScreen({super.key});
 
   @override
-  State<TenantProfileScreen> createState() => _TenantProfileScreenState();
+  State<OwnerProfileScreen> createState() => _OwnerProfileScreenState();
 }
 
-class _TenantProfileScreenState extends State<TenantProfileScreen> {
+class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   bool _isLoading = false;
-  Map<String, dynamic>? _paymentOrder;
-  
-  // Identity Upload fields
   String? _documentType = 'national_id';
   final _docNumberController = TextEditingController();
-  PlatformFile? _selectedIdFile;
-
-  // Contract Upload fields
-  PlatformFile? _selectedContractFile;
+  PlatformFile? _selectedFile;
 
   @override
   void initState() {
     super.initState();
-    _refreshAll();
+    _refreshProfile();
   }
 
   @override
@@ -43,16 +34,8 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _refreshAll() async {
-    setState(() => _isLoading = true);
-    await Future.wait([
-      _refreshProfile(),
-      _fetchPaymentStatus(),
-    ]);
-    if (mounted) setState(() => _isLoading = false);
-  }
-
   Future<void> _refreshProfile() async {
+    setState(() => _isLoading = true);
     try {
       final me = await ApiService.getMe(AuthSession.instance.token);
       if (me['status'] == 200) {
@@ -61,28 +44,13 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         });
       }
     } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Error loading profile: $e');
+      AppLogger.instance.error('OWNER_PROFILE', 'Error refreshing profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _fetchPaymentStatus() async {
-    try {
-      final res = await ApiService.getTenantPaymentStatus(AuthSession.instance.token);
-      if (res['status'] == 200 && res['body']['data'] != null) {
-        setState(() {
-          _paymentOrder = res['body']['data'] as Map<String, dynamic>;
-        });
-      } else {
-        setState(() {
-          _paymentOrder = null;
-        });
-      }
-    } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Error checking payment status: $e');
-    }
-  }
-
-  Future<void> _pickIdDocument() async {
+  Future<void> _pickDocument() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -91,11 +59,16 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
 
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          _selectedIdFile = result.files.first;
+          _selectedFile = result.files.first;
         });
       }
     } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Error picking ID: $e');
+      AppLogger.instance.error('OWNER_PROFILE', 'Error picking file: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to pick document')),
+        );
+      }
     }
   }
 
@@ -106,9 +79,9 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       );
       return;
     }
-    if (_selectedIdFile == null) {
+    if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your ID file')),
+        const SnackBar(content: Text('Please select your document file')),
       );
       return;
     }
@@ -116,24 +89,24 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     setState(() => _isLoading = true);
     try {
       Uint8List bytes;
-      if (_selectedIdFile!.bytes != null) {
-        bytes = _selectedIdFile!.bytes!;
+      if (_selectedFile!.bytes != null) {
+        bytes = _selectedFile!.bytes!;
       } else {
-        bytes = await File(_selectedIdFile!.path!).readAsBytes();
+        bytes = await File(_selectedFile!.path!).readAsBytes();
       }
 
-      final res = await ApiService.uploadTenantIdentityDocument(
+      final res = await ApiService.uploadOwnerIdentityDocument(
         token: AuthSession.instance.token,
         type: _documentType!,
         documentNumber: _docNumberController.text.trim(),
         fileBytes: bytes,
-        fileName: _selectedIdFile!.name,
+        fileName: _selectedFile!.name,
       );
 
       if (res['status'] == 201 || res['status'] == 200) {
         _docNumberController.clear();
         setState(() {
-          _selectedIdFile = null;
+          _selectedFile = null;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -142,109 +115,184 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         }
         await _refreshProfile();
       } else {
-        final err = res['body']['message'] ?? 'Upload failed';
+        final error = res['body']['message'] ?? 'Upload failed';
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $err')),
+            SnackBar(content: Text('Error: $error')),
           );
         }
       }
     } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'ID Upload Error: $e');
+      AppLogger.instance.error('OWNER_PROFILE', 'Error uploading document: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload document')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _pickContractFile() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'jpeg', 'png', 'jpg'],
-      );
+  void _showPayoutBottomSheet() {
+    final formKey = GlobalKey<FormState>();
+    String tempType = AuthSession.instance.payoutType.isNotEmpty 
+        ? AuthSession.instance.payoutType 
+        : 'bank';
+    final numberController = TextEditingController(text: AuthSession.instance.payoutNumber);
+    final infoController = TextEditingController(text: AuthSession.instance.payoutInfo);
 
-      if (result != null && result.files.isNotEmpty) {
-        setState(() {
-          _selectedContractFile = result.files.first;
-        });
-      }
-    } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Error picking contract: $e');
-    }
-  }
-
-  Future<void> _submitContract() async {
-    if (_selectedContractFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please pick a signed contract copy')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    try {
-      Uint8List bytes;
-      if (_selectedContractFile!.bytes != null) {
-        bytes = _selectedContractFile!.bytes!;
-      } else {
-        bytes = await File(_selectedContractFile!.path!).readAsBytes();
-      }
-
-      final res = await ApiService.uploadTenantContract(
-        token: AuthSession.instance.token,
-        fileBytes: bytes,
-        fileName: _selectedContractFile!.name,
-      );
-
-      if (res['status'] == 201 || res['status'] == 200) {
-        setState(() {
-          _selectedContractFile = null;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Signed contract uploaded successfully')),
-          );
-        }
-        await _refreshProfile();
-      } else {
-        final err = res['body']['message'] ?? 'Upload failed';
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $err')),
-          );
-        }
-      }
-    } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Contract Upload Error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _requestRefund() async {
-    setState(() => _isLoading = true);
-    try {
-      final res = await ApiService.requestTenantRefund(AuthSession.instance.token);
-      if (res['status'] == 201 || res['status'] == 200) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Refund request submitted successfully')),
-          );
-        }
-        await _fetchPaymentStatus();
-      } else {
-        final msg = res['body']['message'] ?? 'Failed to submit refund';
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $msg')),
-          );
-        }
-      }
-    } catch (e) {
-      AppLogger.instance.error('TENANT_PROFILE', 'Refund request error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 24,
+                left: 24,
+                right: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Payout Settings',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textDark,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: AppTheme.textGrey),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Select Payout Type',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      initialValue: tempType,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'bank', child: Text('Bank Account')),
+                        DropdownMenuItem(value: 'wallet', child: Text('Mobile Wallet (Vodafone / Orange Cash)')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setModalState(() => tempType = val);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      tempType == 'bank' ? 'Bank Account / IBAN Number' : 'Wallet Phone Number',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: numberController,
+                      keyboardType: tempType == 'wallet' ? TextInputType.phone : TextInputType.text,
+                      decoration: InputDecoration(
+                        hintText: tempType == 'bank' ? 'EG1234567890...' : '01xxxxxxxxx',
+                      ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'This field is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Additional Payout Info',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: infoController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter bank name, swift code, holder name...',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            Navigator.pop(context);
+                            setState(() => _isLoading = true);
+                            try {
+                              final res = await ApiService.updatePayoutInfo(
+                                token: AuthSession.instance.token,
+                                payoutType: tempType,
+                                payoutNumber: numberController.text.trim(),
+                                payoutInfo: infoController.text.trim(),
+                              );
+                              if (!context.mounted) return;
+                              if (res['status'] == 200) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Payout details updated')),
+                                );
+                                await _refreshProfile();
+                              } else {
+                                final err = res['body']['message'] ?? 'Failed to update';
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $err')),
+                                );
+                              }
+                            } catch (e) {
+                              AppLogger.instance.error('OWNER_PROFILE', 'Payout update error: $e');
+                            } finally {
+                              if (mounted) setState(() => _isLoading = false);
+                            }
+                          }
+                        },
+                        child: const Text('Save Payout Settings'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -258,7 +306,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'My Profile',
+          'Owner Profile',
           style: TextStyle(
             color: AppTheme.textDark,
             fontWeight: FontWeight.bold,
@@ -268,7 +316,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _refreshAll,
+            onPressed: _refreshProfile,
             icon: const Icon(Icons.refresh, color: AppTheme.textDark),
           ),
         ],
@@ -276,14 +324,14 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       body: _isLoading && AuthSession.instance.name.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _refreshAll,
+              onRefresh: _refreshProfile,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
-                    // Avatar & Name
+                    // Header Avatar
                     Container(
                       width: 90,
                       height: 90,
@@ -296,12 +344,12 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                         ),
                       ),
                       child: const Center(
-                        child: Text('👤', style: TextStyle(fontSize: 40)),
+                        child: Text('🏢', style: TextStyle(fontSize: 40)),
                       ),
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      AuthSession.instance.name.isEmpty ? 'User' : AuthSession.instance.name,
+                      AuthSession.instance.name.isEmpty ? 'Owner User' : AuthSession.instance.name,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -309,35 +357,27 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      widget.role == 'owner' ? 'Property Owner' : 'Tenant',
-                      style: const TextStyle(
+                    const Text(
+                      'Property Owner',
+                      style: TextStyle(
                         fontSize: 15,
                         color: AppTheme.textGrey,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Verification Badge
+                    // Verification status badge
                     _buildVerificationBadge(status, isVerified),
                     const SizedBox(height: 28),
 
-                    // Active Apartment Rent & Payment details
-                    if (_paymentOrder != null) ...[
-                      _buildPaymentSection(),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Document Upload Section
+                    // Verification document upload or review
                     _buildIdentitySection(status, isVerified),
                     const SizedBox(height: 16),
 
-                    // Signed contract upload section (Available if in an active/pending apartment)
-                    if (_paymentOrder != null) ...[
-                      _buildContractSection(),
-                      const SizedBox(height: 16),
-                    ],
+                    // Payout details card
+                    _buildPayoutCard(),
+                    const SizedBox(height: 16),
 
-                    // Personal Details Card
+                    // Personal details card
                     _buildSectionCard(
                       title: 'Personal Details',
                       children: [
@@ -370,7 +410,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                             MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                           );
                           if (updated == true) {
-                            _refreshAll();
+                            _refreshProfile();
                           }
                         },
                         style: OutlinedButton.styleFrom(
@@ -391,7 +431,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Log Out Button
+                    // Logout Button
                     TextButton(
                       onPressed: () async {
                         setState(() => _isLoading = true);
@@ -433,7 +473,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       bg = AppTheme.bubbleGreen.withValues(alpha: 0.4);
       fg = const Color(0xFF2E7D32);
       icon = Icons.verified;
-      label = 'Verified Tenant';
+      label = 'Verified Owner';
     } else if (status == 'pending') {
       bg = const Color(0xFFFFF3E0);
       fg = Colors.orange;
@@ -466,133 +506,6 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentSection() {
-    final status = _paymentOrder!['status'] as String? ?? 'pending';
-    final amountEgp = ((_paymentOrder!['amount_cents'] as num? ?? 0) / 100).toStringAsFixed(2);
-    final link = _paymentOrder!['payment_url'] as String? ?? '';
-    final breakdown = _paymentOrder!['breakdown'] as Map<String, dynamic>? ?? {};
-    final rentShare = ((breakdown['rent_cents'] as num? ?? 0) / 100).toStringAsFixed(0);
-    final insurance = ((breakdown['insurance_cents'] as num? ?? 0) / 100).toStringAsFixed(0);
-    final fee = ((breakdown['platform_fee_cents'] as num? ?? 0) / 100).toStringAsFixed(0);
-
-    return _buildSectionCard(
-      title: 'Current Rent & Payment Status',
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Payment Status:', style: TextStyle(fontWeight: FontWeight.bold)),
-            _buildPaymentStatusChip(status),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _buildInfoRow(Icons.monetization_on_outlined, 'Total Rent Share', 'EGP $amountEgp'),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.only(left: 32),
-          child: Text(
-            'Breakdown: Rent EGP $rentShare | Insurance EGP $insurance | Fee EGP $fee',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textGrey),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (status == 'pending' && link.isNotEmpty) ...[
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final uri = Uri.parse(link);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                } else {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Could not open checkout page')),
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.payment, size: 18),
-              label: const Text('Pay Now (Go to Paymob)'),
-            ),
-          ),
-        ],
-        if (status == 'paid') ...[
-          const Row(
-            children: [
-              Icon(Icons.check_circle_outline, color: Color(0xFF2E7D32), size: 18),
-              SizedBox(width: 8),
-              Text(
-                'Payment received. Apartment active!',
-                style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: OutlinedButton.icon(
-              onPressed: _requestRefund,
-              icon: const Icon(Icons.undo, color: Colors.orange, size: 18),
-              label: const Text(
-                'Request Refund',
-                style: TextStyle(color: Colors.orange),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.orange),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-        ],
-        if (status == 'refunded') ...[
-          const Row(
-            children: [
-              Icon(Icons.replay_outlined, color: Colors.blue, size: 18),
-              SizedBox(width: 8),
-              Text(
-                'Your payment has been successfully refunded.',
-                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildPaymentStatusChip(String status) {
-    Color bg = AppTheme.inputBackground;
-    Color fg = AppTheme.textGrey;
-    if (status == 'paid') {
-      bg = AppTheme.bubbleGreen.withValues(alpha: 0.4);
-      fg = const Color(0xFF2E7D32);
-    } else if (status == 'pending') {
-      bg = const Color(0xFFFFF3E0);
-      fg = Colors.orange;
-    } else if (status == 'refunded') {
-      bg = const Color(0xFFE3F2FD);
-      fg = Colors.blue;
-    } else if (status == 'failed') {
-      bg = const Color(0xFFFFEBEE);
-      fg = Colors.red;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: fg),
       ),
     );
   }
@@ -733,7 +646,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         ),
         const SizedBox(height: 16),
         InkWell(
-          onTap: _pickIdDocument,
+          onTap: _pickDocument,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
@@ -746,12 +659,12 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                 const Icon(Icons.cloud_upload_outlined, color: AppTheme.primaryBlue, size: 36),
                 const SizedBox(height: 8),
                 Text(
-                  _selectedIdFile != null ? _selectedIdFile!.name : 'Pick Document File (PDF, Image)',
+                  _selectedFile != null ? _selectedFile!.name : 'Pick Document File (PDF, Image)',
                   style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold),
                 ),
-                if (_selectedIdFile != null)
+                if (_selectedFile != null)
                   Text(
-                    '${(_selectedIdFile!.size / 1024 / 1024).toStringAsFixed(2)} MB',
+                    '${(_selectedFile!.size / 1024 / 1024).toStringAsFixed(2)} MB',
                     style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
                   ),
               ],
@@ -764,7 +677,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           height: 50,
           child: ElevatedButton(
             onPressed: _isLoading ? null : _submitIdentityDocument,
-            child: _isLoading
+            child: _isLoading 
                 ? const SizedBox(
                     width: 24, 
                     height: 24, 
@@ -777,59 +690,47 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     );
   }
 
-  Widget _buildContractSection() {
+  Widget _buildPayoutCard() {
+    final type = AuthSession.instance.payoutType;
+    final number = AuthSession.instance.payoutNumber;
+    final info = AuthSession.instance.payoutInfo;
+
     return _buildSectionCard(
-      title: 'Signed Lease Contract',
+      title: 'Payout Settings',
       children: [
-        const Text(
-          'Please pick and upload a copy of the signed lease contract for your active apartment membership.',
-          style: TextStyle(fontSize: 14, color: AppTheme.textGrey),
-        ),
-        const SizedBox(height: 16),
-        InkWell(
-          onTap: _pickContractFile,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.3), width: 1.5, style: BorderStyle.values[1]),
-              borderRadius: BorderRadius.circular(16),
-              color: AppTheme.primaryBlue.withValues(alpha: 0.02),
-            ),
-            child: Column(
-              children: [
-                const Icon(Icons.file_present_outlined, color: AppTheme.primaryBlue, size: 36),
-                const SizedBox(height: 8),
-                Text(
-                  _selectedContractFile != null ? _selectedContractFile!.name : 'Pick Signed Lease Contract Copy',
-                  style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                if (_selectedContractFile != null)
-                  Text(
-                    '${(_selectedContractFile!.size / 1024 / 1024).toStringAsFixed(2)} MB',
-                    style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
-                  ),
-              ],
-            ),
+        if (number.isEmpty) ...[
+          const Text(
+            'You haven\'t configured your payout method yet. Configure it to receive payments for your properties.',
+            style: TextStyle(fontSize: 14, color: AppTheme.textGrey),
           ),
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 12),
+        ] else ...[
+          _buildInfoRow(
+            type == 'wallet' ? Icons.phone_android_outlined : Icons.account_balance_outlined,
+            'Method',
+            type == 'wallet' ? 'Mobile Wallet' : 'Bank Account',
+          ),
+          const Divider(height: 20),
+          _buildInfoRow(Icons.pin_outlined, 'Number / Account', number),
+          if (info.isNotEmpty) ...[
+            const Divider(height: 20),
+            _buildInfoRow(Icons.info_outline, 'Details', info),
+          ],
+          const SizedBox(height: 16),
+        ],
         SizedBox(
           width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _submitContract,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.darkBlue,
-              foregroundColor: Colors.white,
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: _showPayoutBottomSheet,
+            icon: const Icon(Icons.payment, size: 18),
+            label: Text(number.isEmpty ? 'Set Payout Method' : 'Change Payout Settings'),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppTheme.primaryBlue, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    width: 24, 
-                    height: 24, 
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
-                : const Text('Submit Contract'),
           ),
         ),
       ],

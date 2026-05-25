@@ -14,6 +14,8 @@ import 'notifications_screen.dart';
 import 'owner_contracts_screen.dart';
 import 'payments/payments_screen.dart';
 import 'admin_refunds_screen.dart';
+import 'admin_verification_screen.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   final String role;
@@ -483,6 +485,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                context,
+                Icons.verified_user_outlined,
+                'Verification Hub',
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminVerificationScreen()),
                 ),
               ),
             ),

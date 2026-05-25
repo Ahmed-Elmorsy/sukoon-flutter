@@ -48,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final userId = userMap['id'] as int? ?? 0;
 
       final me    = await ApiService.getMe(token);
-      final profile = me['body']['profile'] as Map<String, dynamic>? ?? {};
       final roles   = me['body']['roles']   as List<dynamic>? ?? [];
       
       String role = 'renter';
@@ -61,27 +60,11 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
 
-      AuthSession.instance.save(
-        token:   token,
-        userId:  userId,
-        role:    role,
-        name:    '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'.trim(),
-        email:   _emailCtrl.text.trim(),
-        phone:   me['body']['phone']?.toString() ?? '',
-        gender:  me['body']['gender']?.toString() ?? '',
-        dob:     profile['age']?.toString() ?? '',
-        city:    profile['city']?.toString() ?? '',
-        country: profile['country']?.toString() ?? '',
-        idNumber:      profile['id_number']?.toString() ?? '',
-        birthDate:     profile['birth_date']?.toString() ?? '',
-        address:       profile['address']?.toString() ?? '',
-        profession:    profile['profession']?.toString() ?? '',
-        religion:      profile['religion']?.toString() ?? '',
-        maritalStatus: profile['marital_status']?.toString() ?? '',
-        idExpiryDate:  profile['id_expiry_date']?.toString() ?? '',
-        idIssueDate:   profile['id_issue_date']?.toString() ?? '',
-        idVerified:    profile['id_verified'] == true,
-      );
+      AuthSession.instance.token = token;
+      AuthSession.instance.userId = userId;
+      AuthSession.instance.role = role;
+      AuthSession.instance.email = _emailCtrl.text.trim();
+      AuthSession.instance.updateFromMe(me['body']);
       AppLogger.instance.info('AUTH', 'Login success — role: $role, name: ${AuthSession.instance.name}');
       try {
         final fcmToken = await NotificationService.instance.getToken();

@@ -302,6 +302,35 @@ class ApiService {
           {String? reason}) =>
       AdminApiService.refuseApartment(token, id, reason: reason);
 
+  static Future<Map<String, dynamic>> verifyIdentityDocument(
+          String token, int id) =>
+      AdminApiService.verifyIdentityDocument(token, id);
+
+  static Future<Map<String, dynamic>> rejectIdentityDocument(
+          String token, int id, String reason) =>
+      AdminApiService.rejectIdentityDocument(token, id, reason);
+
+  static Future<Map<String, dynamic>> verifyApartmentDocument(
+          String token, int id) =>
+      AdminApiService.verifyApartmentDocument(token, id);
+
+  static Future<Map<String, dynamic>> rejectApartmentDocument(
+          String token, int id, String reason) =>
+      AdminApiService.rejectApartmentDocument(token, id, reason);
+
+  static Future<Map<String, dynamic>> verifyTenantContract(
+          String token, int id) =>
+      AdminApiService.verifyTenantContract(token, id);
+
+  static Future<Map<String, dynamic>> rejectTenantContract(
+          String token, int id, String reason) =>
+      AdminApiService.rejectTenantContract(token, id, reason);
+
+  static Future<Map<String, dynamic>> getApartmentModerationDetails(
+          String token, int id) =>
+      AdminApiService.getApartmentModerationDetails(token, id);
+
+
   // ── NOTIFICATIONS ────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> getNotifications(String token) =>
@@ -342,4 +371,65 @@ class ApiService {
   static Future<Map<String, dynamic>> retryPaymentLink(
           String token, int orderId) =>
       PaymentsApiService.retryPaymentLink(token, orderId);
+
+  // ── OWNER & TENANT PROFILE EXTENSIONS ────────────────────────
+  static Future<Map<String, dynamic>> updatePayoutInfo({
+    required String token,
+    String? payoutInfo,
+    String? payoutType,
+    String? payoutNumber,
+  }) =>
+      ProfileApiService.updatePayoutInfo(
+        token: token,
+        payoutInfo: payoutInfo,
+        payoutType: payoutType,
+        payoutNumber: payoutNumber,
+      );
+
+  static Future<Map<String, dynamic>> uploadOwnerIdentityDocument({
+    required String token,
+    required String type,
+    required String documentNumber,
+    required List<int> fileBytes,
+    required String fileName,
+  }) =>
+      ProfileApiService.uploadOwnerIdentityDocument(
+        token: token,
+        type: type,
+        documentNumber: documentNumber,
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+
+  static Future<Map<String, dynamic>> uploadTenantIdentityDocument({
+    required String token,
+    required String type,
+    required String documentNumber,
+    required List<int> fileBytes,
+    required String fileName,
+  }) =>
+      ProfileApiService.uploadTenantIdentityDocument(
+        token: token,
+        type: type,
+        documentNumber: documentNumber,
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+
+  static Future<Map<String, dynamic>> uploadTenantContract({
+    required String token,
+    required List<int> fileBytes,
+    required String fileName,
+  }) =>
+      ProfileApiService.uploadTenantContract(
+        token: token,
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+
+  static Future<Map<String, dynamic>> getTenantPaymentStatus(String token) =>
+      ProfileApiService.getTenantPaymentStatus(token);
+
+  static Future<Map<String, dynamic>> requestTenantRefund(String token) =>
+      ProfileApiService.requestTenantRefund(token);
 }

@@ -77,7 +77,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       final userId = userMap['id'] as int? ?? 0;
 
       final me = await ApiService.getMe(token);
-      final meProfile = me['body']['profile'] as Map<String, dynamic>? ?? {};
       final roles = me['body']['roles'] as List<dynamic>? ?? [];
       
       String resolvedRole = 'renter';
@@ -90,27 +89,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         }
       }
 
-      AuthSession.instance.save(
-        token:   token,
-        userId:  userId,
-        role:    resolvedRole,
-        name:    '${meProfile['first_name'] ?? ''} ${meProfile['last_name'] ?? ''}'.trim(),
-        email:   emailText,
-        phone:   me['body']['phone']?.toString() ?? '',
-        gender:  me['body']['gender']?.toString() ?? '',
-        dob:     meProfile['age']?.toString() ?? '',
-        city:    meProfile['city']?.toString() ?? '',
-        country: meProfile['country']?.toString() ?? '',
-        idNumber:      meProfile['id_number']?.toString() ?? '',
-        birthDate:     meProfile['birth_date']?.toString() ?? '',
-        address:       meProfile['address']?.toString() ?? '',
-        profession:    meProfile['profession']?.toString() ?? '',
-        religion:      meProfile['religion']?.toString() ?? '',
-        maritalStatus: meProfile['marital_status']?.toString() ?? '',
-        idExpiryDate:  meProfile['id_expiry_date']?.toString() ?? '',
-        idIssueDate:   meProfile['id_issue_date']?.toString() ?? '',
-        idVerified:    meProfile['id_verified'] == true,
-      );
+      AuthSession.instance.token = token;
+      AuthSession.instance.userId = userId;
+      AuthSession.instance.role = resolvedRole;
+      AuthSession.instance.email = emailText;
+      AuthSession.instance.updateFromMe(me['body']);
       try {
         final fcmToken = await NotificationService.instance.getToken();
         if (fcmToken != null) await ApiService.saveFcmToken(token, fcmToken);

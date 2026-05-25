@@ -5,6 +5,7 @@ import 'dashboard_screen.dart';
 import 'my_apartments_screen.dart';
 import 'search_filter_screen.dart';
 import 'tenant_profile_screen.dart';
+import 'owner_profile_screen.dart';
 import 'owner_contracts_screen.dart';
 import 'tenant_applications_screen.dart';
 import 'user_management_screen.dart';
@@ -33,7 +34,7 @@ class _MainShellState extends State<MainShell> {
       DashboardScreen(role: widget.role),
       const MyApartmentsScreen(),
       const OwnerContractsScreen(),
-      TenantProfileScreen(role: widget.role),
+      const OwnerProfileScreen(),
     ];
     _tenantPages = [
       DashboardScreen(role: widget.role),

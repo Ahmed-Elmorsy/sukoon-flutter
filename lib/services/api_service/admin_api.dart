@@ -68,4 +68,64 @@ class AdminApiService {
       body: jsonEncode({'reason': reason}),
     ));
   }
+
+  static Future<Map<String, dynamic>> verifyIdentityDocument(
+      String token, int id) async {
+    return apiLogged('POST', '/api/admin/identity-documents/$id/verify', () => http.post(
+      Uri.parse('$apiBase/api/admin/identity-documents/$id/verify'),
+      headers: apiHeaders(token),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> rejectIdentityDocument(
+      String token, int id, String reason) async {
+    return apiLogged('POST', '/api/admin/identity-documents/$id/reject', () => http.post(
+      Uri.parse('$apiBase/api/admin/identity-documents/$id/reject'),
+      headers: apiHeaders(token),
+      body: jsonEncode({'reason': reason}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> verifyApartmentDocument(
+      String token, int id) async {
+    return apiLogged('POST', '/api/admin/apartment-documents/$id/verify', () => http.post(
+      Uri.parse('$apiBase/api/admin/apartment-documents/$id/verify'),
+      headers: apiHeaders(token),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> rejectApartmentDocument(
+      String token, int id, String reason) async {
+    return apiLogged('POST', '/api/admin/apartment-documents/$id/reject', () => http.post(
+      Uri.parse('$apiBase/api/admin/apartment-documents/$id/reject'),
+      headers: apiHeaders(token),
+      body: jsonEncode({'reason': reason}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> verifyTenantContract(
+      String token, int id) async {
+    return apiLogged('POST', '/api/admin/tenant-contracts/$id/verify', () => http.post(
+      Uri.parse('$apiBase/api/admin/tenant-contracts/$id/verify'),
+      headers: apiHeaders(token),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> rejectTenantContract(
+      String token, int id, String reason) async {
+    return apiLogged('POST', '/api/admin/tenant-contracts/$id/reject', () => http.post(
+      Uri.parse('$apiBase/api/admin/tenant-contracts/$id/reject'),
+      headers: apiHeaders(token),
+      body: jsonEncode({'reason': reason}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> getApartmentModerationDetails(
+      String token, int id) async {
+    return apiLogged('GET', '/api/admin/apartments/$id/moderation-details', () => http.get(
+      Uri.parse('$apiBase/api/apartments/$id/moderation-details'),
+      headers: apiHeaders(token),
+    ));
+  }
 }
+
