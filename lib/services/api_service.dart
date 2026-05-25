@@ -85,6 +85,61 @@ class ApiService {
     AppLogger.instance.info('AUTH', 'User logged out');
   }
 
+  static Future<Map<String, dynamic>> forgotPassword(String login) async {
+    return _logged('POST', '/api/auth/forgot-password', () => http.post(
+      Uri.parse('$_base/api/auth/forgot-password'),
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      body: jsonEncode({'login': login}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> resetPassword({
+    required String login,
+    required String code,
+    required String password,
+  }) async {
+    return _logged('POST', '/api/auth/reset-password', () => http.post(
+      Uri.parse('$_base/api/auth/reset-password'),
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'login': login,
+        'code': code,
+        'password': password,
+      }),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> resendOtp(String emailOrPhone) async {
+    return _logged('POST', '/api/auth/resend-otp', () => http.post(
+      Uri.parse('$_base/api/auth/resend-otp'),
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      body: jsonEncode({'email': emailOrPhone}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> verifyOtp(String emailOrPhone, String code) async {
+    return _logged('POST', '/api/auth/verify-otp', () => http.post(
+      Uri.parse('$_base/api/auth/verify-otp'),
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      body: jsonEncode({'email': emailOrPhone, 'code': code}),
+    ));
+  }
+
+  static Future<Map<String, dynamic>> changePassword({
+    required String token,
+    required String currentPassword,
+    required String password,
+  }) async {
+    return _logged('POST', '/api/auth/change-password', () => http.post(
+      Uri.parse('$_base/api/auth/change-password'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'password': password,
+      }),
+    ));
+  }
+
   // ── PROFILE ─────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> saveRentalProfile({
