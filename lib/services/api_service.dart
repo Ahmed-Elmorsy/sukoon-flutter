@@ -151,13 +151,43 @@ class ApiService {
   static Future<Map<String, dynamic>> getApartment(String token, int id) =>
       ApartmentsApiService.getApartment(token, id);
 
-  static Future<Map<String, dynamic>> createApartment(
-          String token, Map<String, String> fields) =>
-      ApartmentsApiService.createApartment(token, fields);
+  static Future<Map<String, dynamic>> createApartment({
+    required String token,
+    required Map<String, String> fields,
+    Uint8List? documentBytes,
+    String? documentName,
+    List<Uint8List>? photoBytesList,
+    List<String>? photoNamesList,
+  }) =>
+      ApartmentsApiService.createApartment(
+        token: token,
+        fields: fields,
+        documentBytes: documentBytes,
+        documentName: documentName,
+        photoBytesList: photoBytesList,
+        photoNamesList: photoNamesList,
+      );
 
-  static Future<Map<String, dynamic>> updateApartment(
-          String token, int id, Map<String, String> fields) =>
-      ApartmentsApiService.updateApartment(token, id, fields);
+  static Future<Map<String, dynamic>> updateApartment({
+    required String token,
+    required int id,
+    required Map<String, String> fields,
+    Uint8List? documentBytes,
+    String? documentName,
+    List<Uint8List>? photoBytesList,
+    List<String>? photoNamesList,
+    List<String>? deletePhotos,
+  }) =>
+      ApartmentsApiService.updateApartment(
+        token: token,
+        id: id,
+        fields: fields,
+        documentBytes: documentBytes,
+        documentName: documentName,
+        photoBytesList: photoBytesList,
+        photoNamesList: photoNamesList,
+        deletePhotos: deletePhotos,
+      );
 
   static Future<Map<String, dynamic>> deleteApartment(String token, int id) =>
       ApartmentsApiService.deleteApartment(token, id);

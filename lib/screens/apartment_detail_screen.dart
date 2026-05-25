@@ -51,6 +51,49 @@ class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
     } catch (_) {}
   }
 
+  Future<void> _leaveApartment() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Leave Apartment'),
+        content: const Text('Are you sure you want to leave this apartment? This will cancel your rent application / membership.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    setState(() => _dataChanged = true);
+    try {
+      final res = await ApiService.leaveApartment(
+        AuthSession.instance.token,
+        int.parse(apartment.id),
+      );
+      if (!mounted) return;
+      if (res['status'] == 200 || res['status'] == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Left apartment successfully'), backgroundColor: Color(0xFF2E7D32)),
+        );
+        Navigator.pop(context, true);
+      } else {
+        final msg = res['body']?['message'] ?? res['body']?['error'] ?? 'Failed to leave apartment';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg.toString()), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,14 +107,31 @@ class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
             color: AppTheme.primaryBlue,
             child: Stack(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.bubblePurple.withValues(alpha: 0.3),
+                if (apartment.imageUrls.isNotEmpty)
+                  PageView.builder(
+                    itemCount: apartment.imageUrls.length,
+                    itemBuilder: (context, idx) {
+                      return Image.network(
+                        apartment.imageUrls[idx],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppTheme.bubblePurple.withValues(alpha: 0.3),
+                          child: const Center(
+                            child: Text('🏠', style: TextStyle(fontSize: 64)),
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                else
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.bubblePurple.withValues(alpha: 0.3),
+                    ),
+                    child: const Center(
+                      child: Text('🏠', style: TextStyle(fontSize: 64)),
+                    ),
                   ),
-                  child: const Center(
-                    child: Text('🏠', style: TextStyle(fontSize: 64)),
-                  ),
-                ),
                 SafeArea(
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context, _dataChanged),
@@ -394,7 +454,7 @@ class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
                         child: const Text('Apply for Rent'),
                       ),
                     ),
-                  if (isJoined)
+                  if (isJoined) ...[
                     SizedBox(
                       width: double.infinity,
                       height: 56,
@@ -406,6 +466,21 @@ class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
                         label: const Text('Contact Landlord'),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton.icon(
+                        onPressed: _leaveApartment,
+                        icon: const Icon(Icons.exit_to_app, color: Colors.red, size: 20),
+                        label: const Text('Leave Apartment', style: TextStyle(color: Colors.red)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
                   if (isOwnerView)
                     SizedBox(
                       width: double.infinity,

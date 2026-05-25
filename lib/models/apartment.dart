@@ -10,6 +10,7 @@ class Apartment {
   final String type; // 'studio', 'apartment', 'villa', 'duplex'
   final List<String> amenities;
   final List<String> imageUrls;
+  final List<Map<String, dynamic>> rawPhotos;
   final String ownerName;
   final String status; // 'available', 'rented', 'pending'
   final bool isJoined;
@@ -33,6 +34,7 @@ class Apartment {
     this.type = 'apartment',
     this.amenities = const [],
     this.imageUrls = const [],
+    this.rawPhotos = const [],
     this.ownerName = 'Owner',
     this.status = 'available',
     this.isJoined = false,
@@ -43,22 +45,40 @@ class Apartment {
   });
 
   factory Apartment.fromJson(Map<String, dynamic> json) {
+    final List<String> urls = [];
+    final List<Map<String, dynamic>> rawPhotosList = [];
+    if (json['photos'] != null && json['photos'] is List) {
+      for (final p in json['photos']) {
+        if (p is Map) {
+          rawPhotosList.add(Map<String, dynamic>.from(p));
+          if (p['url'] != null) {
+            urls.add(p['url'].toString());
+          } else if (p['path'] != null) {
+            urls.add(p['path'].toString());
+          }
+        } else if (p is String) {
+          urls.add(p);
+        }
+      }
+    }
     return Apartment(
       id: json['id'].toString(),
       title: 'Apartment #${json['id']}',
       address: json['location'] != null ? json['location'].toString() : 'Cairo, Egypt',
-      description: '',
+      description: json['description']?.toString() ?? '',
       pricePerMonth: double.tryParse(json['price'].toString()) ?? 0,
       rooms: json['rooms_count'] ?? 1,
       bathrooms: 1,
       areaSqm: 50,
       type: 'apartment',
       amenities: [
-        if (json['has_ac'] == true) 'AC',
-        if (json['has_water'] == true) 'Water',
-        if (json['has_gas'] == true) 'Gas',
-        if (json['is_furnished'] == true) 'Furnished',
+        if (json['has_ac'] == true || json['has_ac'] == 1 || json['has_ac'] == '1') 'AC',
+        if (json['has_water'] == true || json['has_water'] == 1 || json['has_water'] == '1') 'Water',
+        if (json['has_gas'] == true || json['has_gas'] == 1 || json['has_gas'] == '1') 'Gas',
+        if (json['is_furnished'] == true || json['is_furnished'] == 1 || json['is_furnished'] == '1') 'Furnished',
       ],
+      imageUrls: urls,
+      rawPhotos: rawPhotosList,
       ownerName: 'Owner #${json['owner_id']}',
       status: _mapStatus(json['status']),
       latitude: json['latitude'] != null

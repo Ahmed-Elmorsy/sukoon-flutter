@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../app_logger.dart';
 import 'base_api.dart';
@@ -22,28 +23,87 @@ class ApartmentsApiService {
     ));
   }
 
-  static Future<Map<String, dynamic>> createApartment(
-      String token, Map<String, String> fields) async {
+  static Future<Map<String, dynamic>> createApartment({
+    required String token,
+    required Map<String, String> fields,
+    Uint8List? documentBytes,
+    String? documentName,
+    List<Uint8List>? photoBytesList,
+    List<String>? photoNamesList,
+  }) async {
     AppLogger.instance.info('API', 'POST /api/apartments', fields);
     final req = http.MultipartRequest('POST', Uri.parse('$apiBase/api/apartments'));
     req.headers['Accept'] = 'application/json';
     req.headers['Authorization'] = 'Bearer $token';
     req.fields.addAll(fields);
-    final streamed = await req.send();
+
+    if (documentBytes != null && documentName != null) {
+      req.files.add(http.MultipartFile.fromBytes(
+        'document',
+        documentBytes,
+        filename: documentName,
+      ));
+    }
+
+    if (photoBytesList != null && photoNamesList != null) {
+      for (int i = 0; i < photoBytesList.length; i++) {
+        req.files.add(http.MultipartFile.fromBytes(
+          'photos[]',
+          photoBytesList[i],
+          filename: photoNamesList[i],
+        ));
+      }
+    }
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
     final res = await http.Response.fromStream(streamed);
     final body = jsonDecode(res.body);
     AppLogger.instance.api('POST', '/api/apartments', res.statusCode, body);
     return {'status': res.statusCode, 'body': body};
   }
 
-  static Future<Map<String, dynamic>> updateApartment(
-      String token, int id, Map<String, String> fields) async {
-    AppLogger.instance.info('API', 'PUT /api/apartments/$id', fields);
-    final req = http.MultipartRequest('PUT', Uri.parse('$apiBase/api/apartments/$id'));
+  static Future<Map<String, dynamic>> updateApartment({
+    required String token,
+    required int id,
+    required Map<String, String> fields,
+    Uint8List? documentBytes,
+    String? documentName,
+    List<Uint8List>? photoBytesList,
+    List<String>? photoNamesList,
+    List<String>? deletePhotos,
+  }) async {
+    AppLogger.instance.info('API', 'POST /api/apartments/$id?_method=PUT', fields);
+    final req = http.MultipartRequest('POST', Uri.parse('$apiBase/api/apartments/$id'));
     req.headers['Accept'] = 'application/json';
     req.headers['Authorization'] = 'Bearer $token';
     req.fields.addAll(fields);
-    final streamed = await req.send();
+    req.fields['_method'] = 'PUT';
+
+    if (deletePhotos != null) {
+      for (int i = 0; i < deletePhotos.length; i++) {
+        req.fields['delete_photos[$i]'] = deletePhotos[i];
+      }
+    }
+
+    if (documentBytes != null && documentName != null) {
+      req.files.add(http.MultipartFile.fromBytes(
+        'document',
+        documentBytes,
+        filename: documentName,
+      ));
+    }
+
+    if (photoBytesList != null && photoNamesList != null) {
+      for (int i = 0; i < photoBytesList.length; i++) {
+        req.files.add(http.MultipartFile.fromBytes(
+          'photos[]',
+          photoBytesList[i],
+          filename: photoNamesList[i],
+        ));
+      }
+    }
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
     final res = await http.Response.fromStream(streamed);
     final body = jsonDecode(res.body);
     AppLogger.instance.api('PUT', '/api/apartments/$id', res.statusCode, body);

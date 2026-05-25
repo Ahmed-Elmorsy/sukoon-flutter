@@ -1,7 +1,9 @@
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../services/auth_session.dart';
@@ -32,6 +34,11 @@ class _PublishApartmentScreenState extends State<PublishApartmentScreen> {
   bool _isFurnished  = false;
   bool _loading      = false;
   Set<Marker> _markers = {};
+
+  Uint8List? _deedBytes;
+  String? _deedName;
+  final List<Uint8List> _photoBytesList = [];
+  final List<String> _photoNamesList = [];
 
   // Admin: owner selection
   bool get _isAdmin => AuthSession.instance.role == 'admin';
@@ -75,35 +82,81 @@ class _PublishApartmentScreenState extends State<PublishApartmentScreen> {
     super.dispose();
   }
 
+  Future<void> _pickDeed() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true,
+    );
+    if (result != null && result.files.single.bytes != null) {
+      setState(() {
+        _deedBytes = result.files.single.bytes;
+        _deedName = result.files.single.name;
+      });
+    }
+  }
+
+  Future<void> _pickPhotos() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+      withData: true,
+    );
+    if (result != null) {
+      setState(() {
+        for (final file in result.files) {
+          if (file.bytes != null) {
+            _photoBytesList.add(file.bytes!);
+            _photoNamesList.add(file.name);
+          }
+        }
+      });
+    }
+  }
+
   Future<void> _publishApartment() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_deedBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please upload your ownership deed document for verification'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       final fields = <String, String>{
-          'price':          _priceController.text.trim(),
-          'insurance':      _insuranceController.text.trim(),
-          'capacity':       _capacityController.text.trim(),
-          'male_count':     '0',
-          'female_count':   '0',
-          'gender_allowed': _genderAllowed,
-          'rooms_count':    _roomsController.text.trim(),
-          'beds_count':     _bedsController.text.trim(),
-          'has_ac':         _hasAc ? '1' : '0',
-          'has_water':      _hasWater ? '1' : '0',
-          'has_gas':        _hasGas ? '1' : '0',
-          'is_furnished':   _isFurnished ? '1' : '0',
-          'status':         'open',
-          'verification_status': 'pending',
-          'rent_duration':  _rentDurationController.text.trim(),
-          'latitude':       _latController.text.trim(),
-          'longitude':      _lngController.text.trim(),
+        'price':          _priceController.text.trim(),
+        'insurance':      _insuranceController.text.trim(),
+        'capacity':       _capacityController.text.trim(),
+        'male_count':     '0',
+        'female_count':   '0',
+        'gender_allowed': _genderAllowed,
+        'rooms_count':    _roomsController.text.trim(),
+        'beds_count':     _bedsController.text.trim(),
+        'has_ac':         _hasAc ? '1' : '0',
+        'has_water':      _hasWater ? '1' : '0',
+        'has_gas':        _hasGas ? '1' : '0',
+        'is_furnished':   _isFurnished ? '1' : '0',
+        'status':         'open',
+        'verification_status': 'pending',
+        'rent_duration':  _rentDurationController.text.trim(),
+        'latitude':       _latController.text.trim(),
+        'longitude':      _lngController.text.trim(),
+        'document_type':  'ownership_deed',
       };
       if (_isAdmin && _selectedOwnerId != null) {
         fields['owner_id'] = _selectedOwnerId.toString();
       }
       final res = await ApiService.createApartment(
-        AuthSession.instance.token,
-        fields,
+        token: AuthSession.instance.token,
+        fields: fields,
+        documentBytes: _deedBytes,
+        documentName: _deedName,
+        photoBytesList: _photoBytesList,
+        photoNamesList: _photoNamesList,
       );
       if (!mounted) return;
       if (res['status'] == 201 || res['status'] == 200) {
@@ -311,6 +364,122 @@ class _PublishApartmentScreenState extends State<PublishApartmentScreen> {
               _buildToggleRow('Water',     _hasWater,    (v) => setState(() => _hasWater = v)),
               _buildToggleRow('Gas',       _hasGas,      (v) => setState(() => _hasGas = v)),
               _buildToggleRow('Furnished', _isFurnished, (v) => setState(() => _isFurnished = v)),
+              const SizedBox(height: 20),
+              _buildLabel('Ownership Deed (Verification Document)'),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickDeed,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.inputBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _deedBytes != null
+                          ? AppTheme.primaryBlue
+                          : AppTheme.lightGrey,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _deedBytes != null
+                            ? Icons.check_circle_outline
+                            : Icons.attach_file_outlined,
+                        color: _deedBytes != null
+                            ? AppTheme.primaryBlue
+                            : AppTheme.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _deedBytes != null
+                              ? (_deedName ?? 'ownership_deed.pdf')
+                              : 'Tap to attach ownership deed PDF/Image',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _deedBytes != null
+                                ? AppTheme.textDark
+                                : AppTheme.grey,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildLabel('Apartment Photos (Optional)'),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _pickPhotos,
+                  icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+                  label: const Text('Add Photos'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryBlue,
+                    side: const BorderSide(color: AppTheme.primaryBlue),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              if (_photoBytesList.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _photoBytesList.length,
+                    itemBuilder: (context, idx) {
+                      return Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppTheme.lightGrey),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(11),
+                              child: Image.memory(
+                                _photoBytesList[idx],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 12,
+                            top: 4,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _photoBytesList.removeAt(idx);
+                                  _photoNamesList.removeAt(idx);
+                                });
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: const Icon(Icons.close, color: Colors.white, size: 14),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
               // Publish Button
               SizedBox(
