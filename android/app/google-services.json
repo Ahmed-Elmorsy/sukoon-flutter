@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197864139371",
+    "project_id": "sukoon-youthyaa",
+    "storage_bucket": "sukoon-youthyaa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197864139371:android:23ef6aec84ab603d0c9f2e",
+        "android_client_info": {
+          "package_name": "com.youthyaa.sukoon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5ny7VyBOrQiXfXgoV_LHRN-BSkYVYLqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

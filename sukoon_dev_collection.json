@@ -1,0 +1,1795 @@
+{
+    "info": {
+        "_postman_id": "019e5bd8-f001-7fa2-bf6d-2394017f8b9e",
+        "name": "Sukoon Dev API",
+        "description": "Comprehensive Postman collection for the Sukoon Dev housing and rental system containing all 39 endpoints organized by functional modules.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication & Onboarding",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Register a new user account with phone/email, password, gender, and role (rental, owner, sponsor).",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone\": \"+201012345678\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"gender\": \"male\",\n    \"role\": \"rental\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Login using email or phone with password.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"login\": \"owner@example.com\",\n    \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Social Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Authenticate or register via Google or Facebook. New users must provide a role.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/social-login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "social-login"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"provider\": \"google\",\n    \"provider_id\": \"1234567890\",\n    \"email\": \"socialuser@example.com\",\n    \"name\": \"Social User\",\n    \"role\": \"rental\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Verify account OTP sent to email or phone during registration/forgot-password.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/verify-otp",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "verify-otp"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"newuser@example.com\",\n    \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resend OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Resend verification OTP code to email or phone.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/resend-otp",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "resend-otp"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"newuser@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Initiate forgot password flow to receive reset OTP code.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/forgot-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forgot-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"login\": \"owner@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Reset password using the received OTP code.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/reset-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "reset-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"login\": \"owner@example.com\",\n    \"code\": \"123456\",\n    \"password\": \"newsecurepassword123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Revoke the current active token session.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Revoke current active token and generate a new token.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/token/refresh",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "token",
+                                "refresh"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Invalidate Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Revoke the current active token session directly.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/token/invalidate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "token",
+                                "invalidate"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Change password for currently authenticated user.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"current_password\": \"password123\",\n    \"password\": \"newsecretpassword123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update FCM Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Update the FCM notification registration token for the authenticated user.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/fcm-token",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "fcm-token"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fcm_token\": \"fcm_device_registration_token_here\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current Profile (Me)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Retrieve details and onboarding status of current authenticated user.",
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Onboarding Steps",
+                    "item": [
+                        {
+                            "name": "Save Rental Profile (Step 2 Rental)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "description": "Complete rental type details (student or employee) as part of step 2 onboarding.",
+                                "url": {
+                                    "raw": "{{baseUrl}}/auth/onboarding/rental-profile",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "auth",
+                                        "onboarding",
+                                        "rental-profile"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"type\": \"student\",\n    \"university\": \"Cairo University\",\n    \"faculty\": \"Computer Science\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Save User Profile (Step 2 Owner/Sponsor, Step 3 Rental)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "description": "Complete user personal details (first_name, last_name, age, city, country, profile photo).",
+                                "url": {
+                                    "raw": "{{baseUrl}}/auth/onboarding/user-profile",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "auth",
+                                        "onboarding",
+                                        "user-profile"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "first_name",
+                                            "value": "Ahmed",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "middle_name",
+                                            "value": "Ali",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "last_name",
+                                            "value": "Elmorsy",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "photo",
+                                            "type": "file",
+                                            "src": []
+                                        },
+                                        {
+                                            "key": "age",
+                                            "value": "24",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "country",
+                                            "value": "Egypt",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "city",
+                                            "value": "Mansoura",
+                                            "type": "text"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Save Sponsor Profile (Step 3 Sponsor)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "description": "Complete company details for sponsor user onboarding step.",
+                                "url": {
+                                    "raw": "{{baseUrl}}/auth/onboarding/sponsor-profile",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "auth",
+                                        "onboarding",
+                                        "sponsor-profile"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"company_name\": \"Sukoon Sponsors Ltd\",\n    \"company_details\": \"Supporting student housing and youth facilities.\",\n    \"target_audience\": \"Young professionals and college students\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Apartments",
+            "item": [
+                {
+                    "name": "List Apartments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "List apartments based on user role (Admin: all, Owner: their own, Tenant: open and approved matching their gender).",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Apartment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Create a new apartment draft with ownership document and optional photos (Owner only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "price",
+                                    "value": "5000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "insurance",
+                                    "value": "1000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "capacity",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "gender_allowed",
+                                    "value": "any",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rooms_count",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "beds_count",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_ac",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_water",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_gas",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "is_furnished",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "latitude",
+                                    "value": "30.0444",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "longitude",
+                                    "value": "31.2357",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rent_duration",
+                                    "value": "12",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "photos[]",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "ownership_deed",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Show Apartment Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "View detailed information for a specific apartment. Exact location is blurred for non-members.",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments/{id}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments",
+                                "{id}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Apartment Details",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Update details, upload/delete photos or change contract/documents of an existing apartment.",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments/{id}?_method=PUT",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments",
+                                "{id}?_method=PUT"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "price",
+                                    "value": "5500",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "insurance",
+                                    "value": "1100",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "capacity",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "gender_allowed",
+                                    "value": "any",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rooms_count",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "beds_count",
+                                    "value": "2",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_ac",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_water",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "has_gas",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "is_furnished",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "latitude",
+                                    "value": "30.0444",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "longitude",
+                                    "value": "31.2357",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rent_duration",
+                                    "value": "12",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "photos[]",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "delete_photos[]",
+                                    "value": "photo_uuid_here",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "document",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "ownership_deed",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Apartment",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Permanently delete an apartment and all associated photos and files (Owner only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments/{id}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments",
+                                "{id}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Join Apartment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Join an open apartment. Adds tenant to the apartment members as pending.",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments/{id}/join",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments",
+                                "{id}",
+                                "join"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Leave Apartment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Leave an apartment. Cancels membership and triggers cancellation notification if payment phase was active.",
+                        "url": {
+                            "raw": "{{baseUrl}}/apartments/{id}/leave",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "apartments",
+                                "{id}",
+                                "leave"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Owner Profile",
+            "item": [
+                {
+                    "name": "Update Payout Information",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Update owner payout account details.",
+                        "url": {
+                            "raw": "{{baseUrl}}/owner/payout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "owner",
+                                "payout"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"payout_info\": \"Bank Name: CIB, Account Name: Ahmed Elmorsy, IBAN: EG123456789012345678901234567\",\n    \"payout_type\": \"wallet\",\n    \"payout_number\": \"01012345678\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Upload Owner Identity Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Upload national ID or Passport document for identity verification.",
+                        "url": {
+                            "raw": "{{baseUrl}}/owner/identity-document",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "owner",
+                                "identity-document"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "type",
+                                    "value": "national_id",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "document_number",
+                                    "value": "29810101234567",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Tenant Profile",
+            "item": [
+                {
+                    "name": "Upload Tenant Identity Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Upload national ID or Passport document for identity verification.",
+                        "url": {
+                            "raw": "{{baseUrl}}/tenant/identity-document",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenant",
+                                "identity-document"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "type",
+                                    "value": "national_id",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "document_number",
+                                    "value": "30110101234567",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Upload Signed Contract",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Upload the signed lease contract file for the apartment.",
+                        "url": {
+                            "raw": "{{baseUrl}}/tenant/contracts",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenant",
+                                "contracts"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Request Refund",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Submit a refund request if a rent cycle was cancelled after payment was made.",
+                        "url": {
+                            "raw": "{{baseUrl}}/tenant/refund",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenant",
+                                "refund"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Payment Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Retrieve the status of the current/latest payment order.",
+                        "url": {
+                            "raw": "{{baseUrl}}/tenant/payment-status",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenant",
+                                "payment-status"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin Verification",
+            "item": [
+                {
+                    "name": "Verify Identity Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Approve user identity document and mark user as verified (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/identity-documents/{id}/verify",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "identity-documents",
+                                "{id}",
+                                "verify"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reject Identity Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Reject user identity document with a specific reason (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/identity-documents/{id}/reject",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "identity-documents",
+                                "{id}",
+                                "reject"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reason\": \"Document copy is blurry and unreadable.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Apartment Ownership Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Verify ownership document. Automatically opens the apartment for leasing if verified (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/apartment-documents/{id}/verify",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "apartment-documents",
+                                "{id}",
+                                "verify"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reject Apartment Ownership Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Reject apartment ownership document with a specific reason (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/apartment-documents/{id}/reject",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "apartment-documents",
+                                "{id}",
+                                "reject"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reason\": \"Uploaded document does not show owner details.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Tenant Contract",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Approve signed contract. Triggers Paymob split payment orders when all roommate contracts are accepted (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/tenant-contracts/{id}/verify",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "tenant-contracts",
+                                "{id}",
+                                "verify"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reject Tenant Contract",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Reject tenant signed contract with a specific reason (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/tenant-contracts/{id}/reject",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "tenant-contracts",
+                                "{id}",
+                                "reject"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reason\": \"Signature is missing on the last page.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Apartment Moderation Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Retrieve comprehensive moderation information for an apartment including owner docs and all tenants (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/apartments/{id}/moderation-details",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "apartments",
+                                "{id}",
+                                "moderation-details"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Approve Refund Request",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Approve a refund request and execute Paymob refund API (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/refund-requests/{id}/approve",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "refund-requests",
+                                "{id}",
+                                "approve"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reject Refund Request",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Reject a refund request and notify the tenant (Admin only).",
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/refund-requests/{id}/reject",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "refund-requests",
+                                "{id}",
+                                "reject"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Payments & Webhooks",
+            "item": [
+                {
+                    "name": "Paymob Webhook Callback",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Callback endpoint triggered by Paymob upon transaction completion (success or failure).",
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/webhook/paymob?hmac=SIGNATURE_HERE",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "webhook",
+                                "paymob?hmac=SIGNATURE_HERE"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"obj\": {\n        \"id\": 12345678,\n        \"success\": true,\n        \"amount_cents\": 600000,\n        \"order\": {\n            \"id\": 987654321\n        },\n        \"currency\": \"EGP\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "item": [
+                {
+                    "name": "List Notifications",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Retrieve a paginated list of notifications for the authenticated user.",
+                        "url": {
+                            "raw": "{{baseUrl}}/notifications",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "notifications"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark Notification as Read",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Mark a specific notification as read by its UUID.",
+                        "url": {
+                            "raw": "{{baseUrl}}/notifications/{id}/read",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "{id}",
+                                "read"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark All Notifications as Read",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "description": "Mark all notifications for the authenticated user as read.",
+                        "url": {
+                            "raw": "{{baseUrl}}/notifications/read-all",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "read-all"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
